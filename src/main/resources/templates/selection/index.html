@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选课管理 - 校园教务管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h3>教务管理系统</h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='/'">&#9632; 首页</div>
+                <div class="menu-group">
+                    <div class="menu-group-title">系统管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/user'">用户管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/dept'">院系管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/class'">班级管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/semester'">学期管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/config'">系统配置</div>
+                    <div class="menu-item" onclick="window.location.href='/system/log'">操作日志</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教学管理</div>
+                    <div class="menu-item" onclick="window.location.href='/student'">学生管理</div>
+                    <div class="menu-item" onclick="window.location.href='/teacher'">教师管理</div>
+                    <div class="menu-item" onclick="window.location.href='/course'">课程管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">资源管理</div>
+                    <div class="menu-item" onclick="window.location.href='/classroom'">教室管理</div>
+                    <div class="menu-item" onclick="window.location.href='/textbook'">教材管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教务管理</div>
+                    <div class="menu-item" style="background:rgba(255,255,255,0.1)">选课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/scheduling'">排课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/grade'">成绩管理</div>
+                    <div class="menu-item" onclick="window.location.href='/exam'">考试管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left"><span>选课管理</span></div>
+                <div class="topbar-right"><span id="currentUser"></span><button class="btn btn-sm btn-danger" onclick="window.location.href='/login'">退出</button></div>
+            </div>
+            <div class="content">
+                <div class="table-container">
+                    <div class="search-bar">
+                        <button class="btn btn-primary" onclick="loadData(1)">刷新</button>
+                        <button class="btn btn-info" onclick="loadPhases()">选课阶段管理</button>
+                    </div>
+                    <h4>选课记录</h4>
+                    <table>
+                        <thead><tr><th>学号</th><th>学生姓名</th><th>课程号</th><th>课程名称</th><th>学期</th><th>选课状态</th><th>抽签</th><th>选课时间</th></tr></thead>
+                        <tbody id="selectionBody"></tbody>
+                    </table>
+                    <div class="pagination"><div class="pagination-info" id="paginationInfo"></div><div class="pagination-btns" id="paginationBtns"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="phaseModal" style="display:none;">
+        <div class="modal" style="max-width:800px">
+            <div class="modal-header"><h3>选课阶段管理</h3><span class="modal-close" onclick="closePhaseModal()">&times;</span></div>
+            <div style="padding:20px">
+                <button class="btn btn-success btn-sm" onclick="showAddPhase()" style="margin-bottom:10px">新增阶段</button>
+                <table>
+                    <thead><tr><th>阶段名称</th><th>阶段编码</th><th>学期ID</th><th>开始时间</th><th>结束时间</th><th>是否当前</th><th>操作</th></tr></thead>
+                    <tbody id="phaseBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="phaseFormModal" style="display:none;">
+        <div class="modal">
+            <div class="modal-header"><h3 id="phaseFormTitle">新增选课阶段</h3><span class="modal-close" onclick="document.getElementById('phaseFormModal').style.display='none'">&times;</span></div>
+            <form id="phaseForm">
+                <input type="hidden" id="phaseId">
+                <div class="form-group"><label>阶段名称</label><input type="text" id="formPhaseName" required placeholder="如: 预选、正选、补退选"></div>
+                <div class="form-group"><label>阶段编码</label><input type="text" id="formPhaseCode" required></div>
+                <div class="form-group"><label>学期ID</label><input type="number" id="formSemesterId" required></div>
+                <div class="form-group"><label>开始时间</label><input type="datetime-local" id="formStartTime" required></div>
+                <div class="form-group"><label>结束时间</label><input type="datetime-local" id="formEndTime" required></div>
+                <div class="form-group"><label>设为当前阶段</label><select id="formIsActive"><option value="0">否</option><option value="1">是</option></select></div>
+                <div class="modal-footer"><button type="button" class="btn" onclick="document.getElementById('phaseFormModal').style.display='none'">取消</button><button type="submit" class="btn btn-primary">保存</button></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        var currentPage = 1, pageSize = 10;
+        function loadData(page) {
+            currentPage = page || 1;
+            fetch('/selection/list?page='+currentPage+'&size='+pageSize).then(function(res){ return res.json(); }).then(function(data) {
+                var tbody = document.getElementById('selectionBody'); tbody.innerHTML = '';
+                if (data.code === 200 && data.data.records && data.data.records.length > 0) {
+                    data.data.records.forEach(function(s) {
+                        var lottery = (s.isLottery === 1) ? '<span style="color:green">是</span>' : '-';
+                        tbody.innerHTML += '<tr><td>'+(s.studentNo||'-')+'</td><td>'+(s.studentName||'-')+'</td><td>'+(s.courseNo||'-')+'</td><td>'+(s.courseName||'-')+'</td><td>'+(s.semesterId||'-')+'</td><td>'+(s.selectionStatus||'-')+'</td><td>'+lottery+'</td><td>'+(s.selectedAt||'')+'</td></tr>';
+                    });
+                    document.getElementById('paginationInfo').textContent = '共 ' + data.data.total + ' 条，第 ' + data.data.page + '/' + data.data.pages + ' 页';
+                    var btns = document.getElementById('paginationBtns'); btns.innerHTML = '';
+                    for (var i = 1; i <= data.data.pages; i++) {
+                        if (data.data.pages > 7 && Math.abs(i - data.data.page) > 2 && i !== 1 && i !== data.data.pages) { if (i===2||i===data.data.pages-1) btns.innerHTML += '<button disabled>...</button>'; continue; }
+                        btns.innerHTML += '<button class="'+(i===data.data.page?' active':'')+'" onclick="loadData('+i+')">'+i+'</button>';
+                    }
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">暂无数据</td></tr>';
+                    document.getElementById('paginationInfo').textContent = '共 0 条';
+                }
+            });
+        }
+        function loadPhases() {
+            document.getElementById('phaseModal').style.display='flex';
+            fetch('/selection/phase/list?page=1&size=100').then(function(res){ return res.json(); }).then(function(data) {
+                var tbody = document.getElementById('phaseBody'); tbody.innerHTML = '';
+                if (data.code === 200 && data.data.records) {
+                    data.data.records.forEach(function(item) {
+                        var act = item.isActive===1?'<span class="badge badge-success">当前</span>':'<span class="badge">-</span>';
+                        tbody.innerHTML += '<tr><td>'+(item.phaseName||'')+'</td><td>'+(item.phaseCode||'')+'</td><td>'+item.semesterId+'</td><td>'+(item.startTime||'')+'</td><td>'+(item.endTime||'')+'</td><td>'+act+'</td><td><button class="btn btn-sm btn-danger" onclick="deletePhase('+item.id+')">删除</button></td></tr>';
+                    });
+                } else { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">暂无阶段</td></tr>'; }
+            });
+        }
+        function closePhaseModal() { document.getElementById('phaseModal').style.display='none'; }
+        function showAddPhase() { document.getElementById('phaseFormTitle').textContent='新增选课阶段'; document.getElementById('phaseForm').reset(); document.getElementById('phaseId').value=''; document.getElementById('phaseFormModal').style.display='flex'; }
+        document.getElementById('phaseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var data = { id: document.getElementById('phaseId').value ? parseInt(document.getElementById('phaseId').value) : null, phaseName: document.getElementById('formPhaseName').value, phaseCode: document.getElementById('formPhaseCode').value, semesterId: parseInt(document.getElementById('formSemesterId').value), startTime: document.getElementById('formStartTime').value.replace('T',' '), endTime: document.getElementById('formEndTime').value.replace('T',' '), isActive: parseInt(document.getElementById('formIsActive').value) };
+            fetch('/selection/phase/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }).then(function(res){ return res.json(); }).then(function(result) { if (result.code === 200) { alert('保存成功'); document.getElementById('phaseFormModal').style.display='none'; loadPhases(); } });
+        });
+        function deletePhase(id) { if (!confirm('确定删除吗？')) return; fetch('/selection/phase/'+id, {method:'DELETE'}).then(function(res){ return res.json(); }).then(function(data) { if (data.code === 200) { alert('删除成功'); loadPhases(); } }); }
+        loadData(1);
+    </script>
+    <script src="/static/js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作日志 - 校园教务管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h3>教务管理系统</h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='/'">&#9632; 首页</div>
+                <div class="menu-group">
+                    <div class="menu-group-title">系统管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/user'">用户管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/dept'">院系管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/class'">班级管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/semester'">学期管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/config'">系统配置</div>
+                    <div class="menu-item" style="background:rgba(255,255,255,0.1)">操作日志</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教学管理</div>
+                    <div class="menu-item" onclick="window.location.href='/student'">学生管理</div>
+                    <div class="menu-item" onclick="window.location.href='/teacher'">教师管理</div>
+                    <div class="menu-item" onclick="window.location.href='/course'">课程管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">资源管理</div>
+                    <div class="menu-item" onclick="window.location.href='/classroom'">教室管理</div>
+                    <div class="menu-item" onclick="window.location.href='/textbook'">教材管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教务管理</div>
+                    <div class="menu-item" onclick="window.location.href='/selection'">选课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/scheduling'">排课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/grade'">成绩管理</div>
+                    <div class="menu-item" onclick="window.location.href='/exam'">考试管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left"><span>操作日志</span></div>
+                <div class="topbar-right"><span id="currentUser"></span><button class="btn btn-sm btn-danger" onclick="window.location.href='/login'">退出</button></div>
+            </div>
+            <div class="content">
+                <div class="table-container">
+                    <div class="search-bar">
+                        <input type="text" id="searchUsername" placeholder="操作用户">
+                        <button class="btn btn-primary" onclick="loadData(1)">搜索</button>
+                    </div>
+                    <table>
+                        <thead><tr><th>ID</th><th>操作用户</th><th>操作内容</th><th>请求方法</th><th>耗时(ms)</th><th>操作时间</th></tr></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                    <div class="pagination"><div class="pagination-info" id="paginationInfo"></div><div class="pagination-btns" id="paginationBtns"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var currentPage = 1, pageSize = 10;
+        function loadData(page) {
+            currentPage = page || 1;
+            var url = '/system/log/list?page=' + currentPage + '&size=' + pageSize;
+            var u = document.getElementById('searchUsername').value;
+            if (u) url += '&username=' + encodeURIComponent(u);
+            fetch(url).then(function(res){ return res.json(); }).then(function(data) { if (data.code === 200) renderTable(data.data); });
+        }
+        function renderTable(pd) {
+            var tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            if (!pd.records || pd.records.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">暂无数据</td></tr>'; return; }
+            pd.records.forEach(function(item) {
+                var dur = item.duration ? '<span class="badge ' + (item.duration > 500 ? 'badge-danger' : 'badge-success') + '">' + item.duration + 'ms</span>' : '-';
+                tbody.innerHTML += '<tr><td>'+item.id+'</td><td>'+(item.username||'')+'</td><td>'+(item.operation||'')+'</td><td>'+(item.method||'')+'</td><td>'+dur+'</td><td>'+(item.createdAt||'')+'</td></tr>';
+            });
+            document.getElementById('paginationInfo').textContent = '共 ' + pd.total + ' 条，第 ' + pd.page + '/' + pd.pages + ' 页';
+            var btns = document.getElementById('paginationBtns'); btns.innerHTML = '';
+            for (var i = 1; i <= pd.pages; i++) { btns.innerHTML += '<button class="'+(i===pd.page?' active':'')+'" onclick="loadData('+i+')">'+i+'</button>'; }
+        }
+        loadData(1);
+    </script>
+    <script src="/static/js/common.js"></script>
+</body>
+</html>

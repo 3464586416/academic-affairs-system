@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园教务管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>教务管理系统</h3>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item" data-page="dashboard">
+                    <span class="menu-icon">&#9632;</span> 首页
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">系统管理</div>
+                    <div class="menu-item" data-url="/system/user">用户管理</div>
+                    <div class="menu-item" data-url="/system/dept">院系管理</div>
+                    <div class="menu-item" data-url="/system/class">班级管理</div>
+                    <div class="menu-item" data-url="/system/semester">学期管理</div>
+                    <div class="menu-item" data-url="/system/config">系统配置</div>
+                    <div class="menu-item" data-url="/system/log">操作日志</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教学管理</div>
+                    <div class="menu-item" data-url="/student">学生管理</div>
+                    <div class="menu-item" data-url="/teacher">教师管理</div>
+                    <div class="menu-item" data-url="/course">课程管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">资源管理</div>
+                    <div class="menu-item" data-url="/classroom">教室管理</div>
+                    <div class="menu-item" data-url="/textbook">教材管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教务管理</div>
+                    <div class="menu-item" data-url="/selection">选课管理</div>
+                    <div class="menu-item" data-url="/scheduling">排课管理</div>
+                    <div class="menu-item" data-url="/grade">成绩管理</div>
+                    <div class="menu-item" data-url="/exam">考试管理</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部导航 -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="btn btn-sm" id="toggleSidebar">&#9776;</button>
+                    <span id="pageTitle">首页</span>
+                </div>
+                <div class="topbar-right">
+                    <span id="currentUser">加载中...</span>
+                    <button class="btn btn-sm btn-danger" onclick="logout()">退出</button>
+                </div>
+            </div>
+
+            <!-- 内容区域 -->
+            <div class="content" id="content">
+                <div class="dashboard">
+                    <h2>欢迎使用校园教务管理系统</h2>
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#127891;</div>
+                            <div class="card-title">学生管理</div>
+                            <div class="card-desc">学生信息、学籍状态、导入导出</div>
+                            <a href="/student" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128104;&#8205;&#127979;</div>
+                            <div class="card-title">教师管理</div>
+                            <div class="card-desc">教师信息、职称、工作量统计</div>
+                            <a href="/teacher" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128218;</div>
+                            <div class="card-title">课程管理</div>
+                            <div class="card-desc">课程信息、先修课程、课程库</div>
+                            <a href="/course" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#127970;</div>
+                            <div class="card-title">教室管理</div>
+                            <div class="card-desc">教室信息、借用申请与审批</div>
+                            <a href="/classroom" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#9999;&#65039;</div>
+                            <div class="card-title">选课管理</div>
+                            <div class="card-desc">学生选课/退课、选课日志</div>
+                            <a href="/selection" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128197;</div>
+                            <div class="card-title">排课管理</div>
+                            <div class="card-desc">课表编排、冲突检测、调课</div>
+                            <a href="/scheduling" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128203;</div>
+                            <div class="card-title">成绩管理</div>
+                            <div class="card-desc">成绩录入、绩点计算、成绩单</div>
+                            <a href="/grade" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128221;</div>
+                            <div class="card-title">考试管理</div>
+                            <div class="card-desc">考试安排、考场座位、签到</div>
+                            <a href="/exam" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-icon">&#128214;</div>
+                            <div class="card-title">教材管理</div>
+                            <div class="card-desc">教材信息、征订、发放</div>
+                            <a href="/textbook" class="btn btn-sm btn-primary">进入</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/common.js"></script>
+    <script>
+        // 检查登录状态并加载角色
+        function getUserRoles(callback) {
+            fetch('/api/currentUser')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.code === 200) {
+                        document.getElementById('currentUser').textContent = data.data.username;
+                        if (data.data.roles) callback(data.data.roles);
+                    } else {
+                        window.location.href = '/login';
+                    }
+                });
+        }
+
+        getUserRoles(function(roles) {
+            // 应用侧边栏权限过滤
+            if (window.applyRoleFilter) window.applyRoleFilter(roles);
+        });
+
+        // 侧边栏菜单点击
+        document.querySelectorAll('.menu-item[data-url]').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var url = this.getAttribute('data-url');
+                window.location.href = url;
+            });
+        });
+
+        document.querySelector('.menu-item[data-page="dashboard"]').addEventListener('click', function() {
+            window.location.href = '/';
+        });
+
+        // 退出登录
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(function() { window.location.href = '/login'; });
+        }
+
+        // 侧边栏折叠
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        });
+    </script>
+</body>
+</html>

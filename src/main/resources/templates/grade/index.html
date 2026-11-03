@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩管理 - 校园教务管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h3>教务管理系统</h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='/'">&#9632; 首页</div>
+                <div class="menu-group">
+                    <div class="menu-group-title">系统管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/user'">用户管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/dept'">院系管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/class'">班级管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/semester'">学期管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/config'">系统配置</div>
+                    <div class="menu-item" onclick="window.location.href='/system/log'">操作日志</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教学管理</div>
+                    <div class="menu-item" onclick="window.location.href='/student'">学生管理</div>
+                    <div class="menu-item" onclick="window.location.href='/teacher'">教师管理</div>
+                    <div class="menu-item" onclick="window.location.href='/course'">课程管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">资源管理</div>
+                    <div class="menu-item" onclick="window.location.href='/classroom'">教室管理</div>
+                    <div class="menu-item" onclick="window.location.href='/textbook'">教材管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教务管理</div>
+                    <div class="menu-item" onclick="window.location.href='/selection'">选课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/scheduling'">排课管理</div>
+                    <div class="menu-item" style="background:rgba(255,255,255,0.1)">成绩管理</div>
+                    <div class="menu-item" onclick="window.location.href='/exam'">考试管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left"><span>成绩管理</span></div>
+                <div class="topbar-right"><span id="currentUser"></span>
+                    <button class="btn btn-sm btn-danger" onclick="window.location.href='/login'">退出</button></div>
+            </div>
+            <div class="content">
+                <div class="table-container">
+                    <div class="search-bar">
+                        <input type="number" id="searchStudentId" placeholder="学生ID">
+                        <input type="number" id="searchCourseId" placeholder="课程ID">
+                        <button class="btn btn-primary" onclick="loadData(1)">搜索</button>
+                        <button class="btn btn-success" onclick="showAddModal()">录入成绩</button>
+                    </div>
+                    <table>
+                        <thead><tr><th>学生</th><th>课程</th><th>平时成绩</th><th>期末成绩</th><th>总评</th><th>绩点</th><th>学分</th><th>备注</th><th>操作</th></tr></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                    <div class="pagination"><div class="pagination-info" id="paginationInfo"></div><div class="pagination-btns" id="paginationBtns"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal">
+            <div class="modal-header"><h3 id="modalTitle">录入成绩</h3><span class="modal-close" onclick="closeModal()">&times;</span></div>
+            <form id="gradeForm">
+                <input type="hidden" id="gradeId">
+                <div class="form-group"><label>学生ID</label><input type="number" id="formStudentId" required></div>
+                <div class="form-group"><label>课程ID</label><input type="number" id="formCourseId" required></div>
+                <div class="form-group"><label>学期ID</label><input type="number" id="formSemesterId" required></div>
+                <div class="form-group"><label>平时成绩</label><input type="number" step="0.1" id="formRegularScore"></div>
+                <div class="form-group"><label>期末成绩</label><input type="number" step="0.1" id="formFinalScore"></div>
+                <div class="form-group"><label>是否补考</label><select id="formMakeup"><option value="0">否</option><option value="1">是</option></select></div>
+                <div class="form-group"><label>是否重修</label><select id="formRetake"><option value="0">否</option><option value="1">是</option></select></div>
+                <div class="form-group"><label>备注</label><input type="text" id="formRemark"></div>
+                <div class="modal-footer"><button type="button" class="btn" onclick="closeModal()">取消</button><button type="submit" class="btn btn-primary">保存</button></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        var currentPage = 1;
+        function loadData(page) {
+            currentPage = page || 1;
+            var url = '/grade/list?page=' + currentPage + '&size=10';
+            var sid = document.getElementById('searchStudentId').value;
+            var cid = document.getElementById('searchCourseId').value;
+            if (sid) url += '&studentId=' + sid;
+            if (cid) url += '&courseId=' + cid;
+            fetch(url).then(function(res) { return res.json(); }).then(function(data) { if (data.code === 200) renderTable(data.data); });
+        }
+        function renderTable(pd) {
+            var tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            if (!pd.records || pd.records.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">暂无数据</td></tr>'; return; }
+            pd.records.forEach(function(item) {
+                var gp = item.gradePoint || '-';
+                var total = item.totalScore || '-';
+                var makeup = item.isMakeup === 1 ? '<span class="badge badge-warning">补考</span>' : '';
+                var retake = item.isRetake === 1 ? '<span class="badge badge-danger">重修</span>' : '';
+                tbody.innerHTML += '<tr><td>'+(item.studentName||'ID:'+item.studentId)+'</td><td>'+(item.courseName||'ID:'+item.courseId)+'</td><td>'+(item.regularScore||'-')+'</td><td>'+(item.finalScore||'-')+'</td><td><strong>'+total+'</strong></td><td>'+gp+'</td><td>'+(item.creditEarned||'-')+'</td><td>'+(item.remark||'')+makeup+retake+'</td><td><button class="btn btn-sm btn-primary" onclick="editGrade('+item.id+')">编辑</button> <button class="btn btn-sm btn-danger" onclick="deleteGrade('+item.id+')">删除</button></td></tr>';
+            });
+            document.getElementById('paginationInfo').textContent = '共 '+pd.total+' 条，第 '+pd.page+'/'+pd.pages+' 页';
+            var btns = document.getElementById('paginationBtns'); btns.innerHTML = '';
+            for (var i=1;i<=pd.pages;i++) btns.innerHTML += '<button class="'+(i===currentPage?' active':'')+'" onclick="loadData('+i+')">'+i+'</button>';
+        }
+        function showAddModal() { document.getElementById('gradeForm').reset(); document.getElementById('gradeId').value=''; document.getElementById('modalTitle').textContent='录入成绩'; document.getElementById('modalOverlay').style.display='flex'; }
+        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
+        function editGrade(id) { alert('编辑功能 - 请根据实际数据调整'); }
+        function deleteGrade(id) { if(!confirm('确定删除？')) return; fetch('/grade/'+id,{method:'DELETE'}).then(function(res){return res.json();}).then(function(data){if(data.code===200){alert('删除成功');loadData(currentPage);}else{alert(data.message);}}); }
+        document.getElementById('gradeForm').addEventListener('submit',function(e){e.preventDefault();var data={id:document.getElementById('gradeId').value||null,studentId:document.getElementById('formStudentId').value,courseId:document.getElementById('formCourseId').value,semesterId:document.getElementById('formSemesterId').value,regularScore:document.getElementById('formRegularScore').value||null,finalScore:document.getElementById('formFinalScore').value||null,isMakeup:document.getElementById('formMakeup').value,isRetake:document.getElementById('formRetake').value,remark:document.getElementById('formRemark').value};fetch('/grade/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(res){return res.json();}).then(function(r){if(r.code===200){alert('保存成功');closeModal();loadData(currentPage);}else{alert(r.message);}});});
+        loadData(1);
+    </script>
+    <script src="/static/js/common.js"></script>
+</body>
+</html>

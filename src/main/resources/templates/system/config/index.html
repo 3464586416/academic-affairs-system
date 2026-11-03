@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统配置 - 校园教务管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h3>教务管理系统</h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='/'">&#9632; 首页</div>
+                <div class="menu-group">
+                    <div class="menu-group-title">系统管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/user'">用户管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/dept'">院系管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/class'">班级管理</div>
+                    <div class="menu-item" onclick="window.location.href='/system/semester'">学期管理</div>
+                    <div class="menu-item" style="background:rgba(255,255,255,0.1)">系统配置</div>
+                    <div class="menu-item" onclick="window.location.href='/system/log'">操作日志</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教学管理</div>
+                    <div class="menu-item" onclick="window.location.href='/student'">学生管理</div>
+                    <div class="menu-item" onclick="window.location.href='/teacher'">教师管理</div>
+                    <div class="menu-item" onclick="window.location.href='/course'">课程管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">资源管理</div>
+                    <div class="menu-item" onclick="window.location.href='/classroom'">教室管理</div>
+                    <div class="menu-item" onclick="window.location.href='/textbook'">教材管理</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">教务管理</div>
+                    <div class="menu-item" onclick="window.location.href='/selection'">选课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/scheduling'">排课管理</div>
+                    <div class="menu-item" onclick="window.location.href='/grade'">成绩管理</div>
+                    <div class="menu-item" onclick="window.location.href='/exam'">考试管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left"><span>系统配置</span></div>
+                <div class="topbar-right"><span id="currentUser"></span><button class="btn btn-sm btn-danger" onclick="window.location.href='/login'">退出</button></div>
+            </div>
+            <div class="content">
+                <div class="table-container">
+                    <div class="search-bar">
+                        <button class="btn btn-primary" onclick="loadData()">刷新</button>
+                        <button class="btn btn-success" onclick="showAddModal()">新增</button>
+                    </div>
+                    <table>
+                        <thead><tr><th>ID</th><th>配置键</th><th>配置值</th><th>说明</th><th>更新时间</th><th>操作</th></tr></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal">
+            <div class="modal-header"><h3 id="modalTitle">新增配置</h3><span class="modal-close" onclick="closeModal()">&times;</span></div>
+            <form id="configForm">
+                <input type="hidden" id="configId">
+                <div class="form-group"><label>配置键</label><input type="text" id="formConfigKey" required></div>
+                <div class="form-group"><label>配置值</label><input type="text" id="formConfigValue"></div>
+                <div class="form-group"><label>说明</label><input type="text" id="formDescription"></div>
+                <div class="modal-footer"><button type="button" class="btn" onclick="closeModal()">取消</button><button type="submit" class="btn btn-primary">保存</button></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function loadData() {
+            fetch('/system/config/list').then(function(res){ return res.json(); }).then(function(data) { if (data.code === 200) renderTable(data.data); });
+        }
+        function renderTable(list) {
+            var tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            if (!list || list.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">暂无数据</td></tr>'; return; }
+            list.forEach(function(item) {
+                tbody.innerHTML += '<tr><td>'+item.id+'</td><td>'+(item.configKey||'')+'</td><td>'+(item.configValue||'')+'</td><td>'+(item.description||'')+'</td><td>'+(item.updatedAt||item.createdAt||'')+'</td><td><button class="btn btn-sm btn-primary" onclick="editConfig('+item.id+')">编辑</button> <button class="btn btn-sm btn-danger" onclick="deleteConfig('+item.id+')">删除</button></td></tr>';
+            });
+        }
+        function showAddModal() { document.getElementById('modalTitle').textContent='新增配置'; document.getElementById('configForm').reset(); document.getElementById('configId').value=''; document.getElementById('modalOverlay').style.display='flex'; }
+        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
+        function editConfig(id) {
+            fetch('/system/config/list').then(function(res){ return res.json(); }).then(function(data) {
+                if (data.code === 200) {
+                    var item = data.data.find(function(x){ return x.id === id; });
+                    if (item) {
+                        document.getElementById('modalTitle').textContent='编辑配置';
+                        document.getElementById('configId').value=item.id;
+                        document.getElementById('formConfigKey').value=item.configKey||'';
+                        document.getElementById('formConfigValue').value=item.configValue||'';
+                        document.getElementById('formDescription').value=item.description||'';
+                        document.getElementById('modalOverlay').style.display='flex';
+                    }
+                }
+            });
+        }
+        function deleteConfig(id) { if (!confirm('确定删除吗？')) return; fetch('/system/config/' + id, {method:'DELETE'}).then(function(res){ return res.json(); }).then(function(data) { if (data.code === 200) { alert('删除成功'); loadData(); } }); }
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var data = { id: document.getElementById('configId').value ? parseInt(document.getElementById('configId').value) : null, configKey: document.getElementById('formConfigKey').value, configValue: document.getElementById('formConfigValue').value, description: document.getElementById('formDescription').value };
+            fetch('/system/config/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }).then(function(res){ return res.json(); }).then(function(result) { if (result.code === 200) { alert('保存成功'); closeModal(); loadData(); } else alert(result.message||'保存失败'); });
+        });
+        loadData();
+    </script>
+    <script src="/static/js/common.js"></script>
+</body>
+</html>
