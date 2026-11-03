@@ -13,7 +13,7 @@ app_port: 7860
 
 | 模块 | 说明 |
 |---|---|
-| 登录与权限 | Spring Security + BCrypt；管理员 / 教师 / 学生三角色，URL 与页面按钮双层控制 |
+| 登录与权限 | BCrypt 密码哈希（Spring Security crypto）+ 自定义拦截器按 管理员 / 教师 / 教务秘书 三种角色做 URL 级授权（粒度实现见 interceptor/AuthInterceptor.java）；教师仅可成绩录入、排课/考试保存与本人资料修改，越权一律 403 |
 | 开课与排课 | 学期 → 课程 → 班级 → 课表（教师、教室、时间段冲突校验） |
 | 选课 | 学生选课 / 退选，容量控制 |
 | 考试与成绩 | 考试安排、成绩录入、**Apache POI 成绩报表导出** |
@@ -48,7 +48,7 @@ set DB_PASSWORD=你的MySQL密码
 mvnw.cmd spring-boot:run
 ```
 
-浏览器打开 http://localhost:8080 ，登录页给出默认账号 `admin / 123456`（库内为 BCrypt 哈希存储）；其他演示用户见 `sql/school_system.sql` 的 `sys_user` 表。
+浏览器打开 http://localhost:8080 ，默认账号 `admin / 123456`（管理员）、`zhulin / 123456`（教务秘书）、`zhangwei / 123456`（教师），库内均为 BCrypt 哈希存储；其余演示数据见 `sql/school_system.sql`。
 
 云端数据库（如 TiDB Cloud 等 MySQL 兼容服务）直接覆盖 `DB_URL` 即可运行，代码与配置中不含任何真实凭据。
 

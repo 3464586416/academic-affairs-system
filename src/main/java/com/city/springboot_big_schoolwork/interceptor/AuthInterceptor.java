@@ -22,8 +22,8 @@ public class AuthInterceptor implements HandlerInterceptor {
     private TeacherMapper teacherMapper;
 
     private static final String[] PUBLIC_PATHS = {
-            "/login", "/api/login", "/api/logout", "/api/currentUser", "/api/reset-admin",
-            "/static/", "/css/", "/js/"
+            "/login", "/api/login", "/api/logout", "/api/currentUser",
+            "/static/", "/css/", "/js/", "/error"
     };
 
     @Override
@@ -86,24 +86,23 @@ public class AuthInterceptor implements HandlerInterceptor {
                     if (uri.equals(path) || uri.startsWith(path)) return true;
                 }
             }
-            // POST 请求：教师可录入成绩、保存自己的排课、修改个人信息
+            // POST 请求：教师仅可执行本人业务动作（成绩录入/排课保存/考试发布/改本人资料），其余一律 403
             if (!isGet) {
-                // 成绩录入
-                if (uri.startsWith("/grade/save") || uri.startsWith("/grade/")) return true;
-                // 排课管理
-                if (uri.startsWith("/scheduling/save") || uri.startsWith("/scheduling/")) return true;
-                // 修改个人信息（仅限自己）
-                if (uri.startsWith("/teacher/save")) return true;
-                // 考试管理（发布考试、录入成绩等）
-                if (uri.startsWith("/exam/save") || uri.startsWith("/exam/")) return true;
+                if (uri.startsWith("/grade/save")
+                        || uri.startsWith("/scheduling/save")
+                        || uri.startsWith("/exam/save")
+                        || uri.startsWith("/teacher/save")) return true;
+                response.setStatus(403);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":403,\"message\":\"权限不足：教师无权操作该功能\"}");
+                return false;
             }
-            response.setStatus(403);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":403,\"message\":\"权限不足：教师无权操作该功能\"}");
-            return false;
         }
 
-        // 未知角色放行查看
-        return true;
+        // 其余角色（如学生）不允许进入管理端
+        response.setStatus(403);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"code\":403,\"message\":\"该账号无权访问管理端\"}");
+        return false;
     }
 }

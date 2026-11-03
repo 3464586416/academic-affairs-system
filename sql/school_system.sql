@@ -669,6 +669,7 @@ CREATE TABLE `sys_role`  (
 -- ----------------------------
 INSERT INTO `sys_role` VALUES (1, '管理员', 'ADMIN', '系统管理员，拥有所有权限', 1, '2026-06-17 12:27:29');
 INSERT INTO `sys_role` VALUES (2, '教师', 'TEACHER', '教师角色', 1, '2026-06-17 12:27:29');
+INSERT INTO `sys_role` VALUES (3, '教务秘书', 'SECRETARY', '负责排课、选课等日常教务工作', 1, '2026-06-17 12:27:29');
 
 -- ----------------------------
 -- Table structure for sys_semester
@@ -716,7 +717,7 @@ INSERT INTO `sys_user` VALUES (3, 'lina', '$2a$10$cpVozj.woLHtQWQdtb37SuENY41iYU
 INSERT INTO `sys_user` VALUES (4, 'wangfang', '$2a$10$cpVozj.woLHtQWQdtb37SuENY41iYU0Gj4GOBJRhmSNh9k8JrnpZG', '王芳', 1, '2026-06-17 12:27:45', '2026-06-17 12:27:45');
 INSERT INTO `sys_user` VALUES (5, 'liuqiang', '$2a$10$cpVozj.woLHtQWQdtb37SuENY41iYU0Gj4GOBJRhmSNh9k8JrnpZG', '刘强', 1, '2026-06-17 12:27:45', '2026-06-17 12:27:45');
 INSERT INTO `sys_user` VALUES (6, 'chenming', '$2a$10$cpVozj.woLHtQWQdtb37SuENY41iYU0Gj4GOBJRhmSNh9k8JrnpZG', '陈明', 1, '2026-06-17 12:27:45', '2026-06-17 12:27:45');
-INSERT INTO `sys_user` VALUES (8, '121212', '$2a$10$wgDWYWECrQFRchN9/FciYORBfjbVzZIPGIIw20M2ZcpZPLsc93NNO', '121212', 1, '2026-06-26 15:41:37', '2026-06-26 15:41:37');
+INSERT INTO `sys_user` VALUES (7, 'zhulin', '$2a$10$cpVozj.woLHtQWQdtb37SuENY41iYU0Gj4GOBJRhmSNh9k8JrnpZG', '朱琳', 1, '2026-06-17 12:27:45', '2026-06-17 12:27:45');
 
 -- ----------------------------
 -- Table structure for sys_user_role
@@ -742,7 +743,7 @@ INSERT INTO `sys_user_role` VALUES (3, 3, 2);
 INSERT INTO `sys_user_role` VALUES (5, 4, 2);
 INSERT INTO `sys_user_role` VALUES (4, 5, 2);
 INSERT INTO `sys_user_role` VALUES (2, 6, 2);
-INSERT INTO `sys_user_role` VALUES (8, 8, 2);
+INSERT INTO `sys_user_role` VALUES (7, 7, 3);
 
 -- ----------------------------
 -- Table structure for teacher
